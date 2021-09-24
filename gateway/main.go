@@ -6,6 +6,4 @@ import (
 
 func main() {
 	gateway.Gateway()
-	//gateway.Tcpsendfromfile("0.0.0.0:8889")
-
 }
