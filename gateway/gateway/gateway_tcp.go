@@ -33,10 +33,10 @@ func TCPprocess(IPlisten map[string]int, aim map[string]string) {
 			fmt.Printf("Accept() suc conn=%v,客户端IP=%v\n", conn, conn.RemoteAddr().String())
 		}
 
-		IPreceive := conn.RemoteAddr().String()[:strings.Index(conn.RemoteAddr().String(), ":")]
+		IPReceive := conn.RemoteAddr().String()[:strings.Index(conn.RemoteAddr().String(), ":")]
 		//fmt.Println(IPreceive)
 		//go print_aim(aim)
-		port := ensureIP(IPlisten, IPreceive)
+		port := ensureIP(IPlisten, IPReceive)
 		shost2 := "192.168.1.7:" + port
 		go process(conn, aim, shost2)
 
