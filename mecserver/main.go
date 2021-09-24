@@ -7,6 +7,5 @@ import (
 func main() {
 
 	mecserver.RegularRgister()
-
+	//2
 }
-
