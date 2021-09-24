@@ -86,15 +86,14 @@ func RegularRgister() {
 	Createmarknodes("/"+path, []byte(ip))
 
 	for {
-
 		//Register("/work1", "5555") //注册的路径和端口
 
-		nodesname, conf, _ := GetConf("/" + path)
-		fmt.Println("conf: ", nodesname[1:], ":", conf)
+		//nodesname, conf, _ := GetConf("/" + path)
+		//fmt.Println("conf: ", nodesname[1:], ":", conf)
 
 		//ZKOperateTest()
-		//allConf, _ := GetAllConf("/")
-		//fmt.Println("batchConf:", allConf)
+		allConf, _ := GetAllConf("/")
+		fmt.Println("batchConf:", allConf)
 
 		time.Sleep(time.Second * 10)
 	}

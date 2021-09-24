@@ -63,7 +63,6 @@ func initConn() {
 		conn.Close()
 	}
 	conn = connZK
-
 }
 
 func Register(path, port string) {

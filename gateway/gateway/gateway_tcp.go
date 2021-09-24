@@ -4,13 +4,15 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net"
+	"strconv"
+	"strings"
 )
 
-func TCPprocess(aim map[string]string, shost string, shost2 string) {
+func TCPprocess(IPlisten map[string]int, aim map[string]string) {
 	// fmt.Println("服务器开始监听...")
 	//1.tcp表示使用网络协议是tcp
 	//2.0.0.0.0:8888表示在本地监听8888端口
-	//shost = "192.168.1.7:8888"      //192.168.17.128
+	shost := "192.168.1.7:8888" //192.168.17.128
 	lister, err := net.Listen("tcp", shost)
 	if err != nil {
 		fmt.Println("UPLINK:Binding Failed...err: ", err)
@@ -30,7 +32,12 @@ func TCPprocess(aim map[string]string, shost string, shost2 string) {
 		} else {
 			fmt.Printf("Accept() suc conn=%v,客户端IP=%v\n", conn, conn.RemoteAddr().String())
 		}
+
+		IPreceive := conn.RemoteAddr().String()[:strings.Index(conn.RemoteAddr().String(), ":")]
+		//fmt.Println(IPreceive)
 		//go print_aim(aim)
+		port := ensureIP(IPlisten, IPreceive)
+		shost2 := "192.168.1.7:" + port
 		go process(conn, aim, shost2)
 
 	}
@@ -61,7 +68,7 @@ func process(con net.Conn, aim map[string]string, shost2 string) {
 	if n != 0 {
 
 		bestMEC := selectBestMECServer(aim)
-		bestMEC = "0.0.0.0"       //"192.168.2.240"
+		bestMEC = "0.0.0.0" //"192.168.2.240"
 
 		if bestMEC != "" {
 			//fmt.Println("the bestMEC is:", bestMEC)
@@ -83,8 +90,19 @@ func process(con net.Conn, aim map[string]string, shost2 string) {
 	}
 }
 
-
 func print_aim(m map[string]string) {
 	fmt.Println("当前的aim:", m)
 
+}
+
+//根据传入IP，分配端口用于TCP发送
+func ensureIP(IPlisten map[string]int, IPrec string) string {
+	shostNum := IPlisten[IPrec]
+	if shostNum == 0 {
+		shostNum = len(IPlisten) + 1
+		IPlisten[IPrec] = 8879 + shostNum*10
+		shostNum = IPlisten[IPrec]
+	}
+	shostPort := strconv.Itoa(shostNum)
+	return shostPort
 }
