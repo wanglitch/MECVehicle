@@ -1,13 +1,15 @@
 package mecserver
 
 import (
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"net"
 	"os"
+	"strconv"
 )
 
-func TCPprocess(listenHost string, sendHost string, threadNumber int) {
+func TCPprocess(listenHost string, sendHost string) {
 	fmt.Println("服务器开始监听...")
 	//1.tcp表示使用网络协议是tcp
 	//2.0.0.0.0:8888表示在本地监听8888端口
@@ -29,12 +31,12 @@ func TCPprocess(listenHost string, sendHost string, threadNumber int) {
 		} else {
 			fmt.Printf("Accept() suc conn=%v,客户端IP=%v\n", conn, conn.RemoteAddr().String())
 		}
-		go Process(conn, sendHost, threadNumber)
+		go Process(conn, sendHost)
 	}
 	//fmt.Printf("lister=%v\n",lister)
 }
 
-func Process(con net.Conn, sendHost string, threadNumber int) {
+func Process(con net.Conn, sendHost string) {
 	//循环接收客户端发送的数据
 	//defer con.Close() //关闭con
 	//var context = []byte{}
@@ -59,13 +61,10 @@ func Process(con net.Conn, sendHost string, threadNumber int) {
 	sourceIP = buf[0:4]
 	context := buf[4:n]
 
-	ioutil.WriteFile(`temp`, context[5:n], 0666)
-	//ioutil.WriteFile(`1`, buf[0:n], 0666)
-	//f, err := os.Create("temp")
-	//f.Write(context[5:n])
+	ioutil.WriteFile(`temp`, buf[9:n], 0666)
 
 	taskdata := context
-	calResult, err := calculateTask(taskdata, threadNumber)
+	calResult, err := calculateTask(taskdata, IPBytesToString(sourceIP))
 	//calResult, err := calculateTask(buf)
 
 	callength := len(calResult)
@@ -97,7 +96,7 @@ func Process(con net.Conn, sendHost string, threadNumber int) {
 func tcpHandler(con net.Conn) ([]byte, int) {
 	var allbuf []byte
 	var m int = 0
-	for{
+	for {
 		//创建一个新的切片
 		buf := make([]byte, 1024)
 		n, err := con.Read(buf)
@@ -113,6 +112,19 @@ func tcpHandler(con net.Conn) ([]byte, int) {
 	return allbuf, m
 }
 
+//将BytesIP转为StringIP
+func IPBytesToString(b []byte) string {
+	var buf bytes.Buffer
+	for i, v := range b {
+		t := strconv.FormatInt(int64(v), 10)
+		if i < 3 {
+			buf.WriteString(t + ".")
+		} else {
+			buf.WriteString(t)
+		}
+	}
+	return buf.String()
+}
 
 func tcprecv(conn net.Conn) ([]byte, int) {
 	f, _ := os.Create("temp")
@@ -140,7 +152,6 @@ func tcprecv(conn net.Conn) ([]byte, int) {
 	defer f.Close()
 	return returndata, length
 }
-
 
 func tcpsend(remoteAddr string, data []byte, len int) {
 	conn, err := net.Dial("tcp", remoteAddr)

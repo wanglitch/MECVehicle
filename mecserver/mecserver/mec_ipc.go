@@ -14,29 +14,27 @@ type ipc struct {
 }
 
 var (
-	ipc_busy    bool = false
-	ipc_writing byte  = 0
-	ipc_idle    int  = 1
-	ipc_busying int  = 2
-	ipc_write_done byte = 4
+	ipc_busy        bool = false
+	ipc_writing     byte = 0
+	ipc_idle        int  = 1
+	ipc_busying     int  = 2
+	ipc_write_done  byte = 4
 	ipc_write_done2 byte = 5
-	ipc_cal_done int = 6
-	ipc_cal_done2 int = 7
+	ipc_cal_done    int  = 6
+	ipc_cal_done2   int  = 7
 
-	ipc_shmpool []ipc
+	ipc_shmpool  []ipc
 	ipc_shmpool2 []ipc
 
-	numOfShm    int = 3
-	capOfShm    int = 1024000
+	numOfShm int = 3
+	capOfShm int = 1024000
 )
-
 
 // func CheckError(err error) {
 // 	if err != nil {
 // 		panic(err)
 // 	}
 // }
-
 
 func createShm(numOfSum int, capacity int) ([]*shm.Segment, []int) {
 	segPtrAttay := make([]*shm.Segment, numOfSum)
@@ -61,7 +59,6 @@ func createShm(numOfSum int, capacity int) ([]*shm.Segment, []int) {
 	// print(n)
 }
 
-
 func initShm(sendHost string, threadNumber int) {
 	segPtrAttay, shmID := createShm(numOfShm, capOfShm)
 	// fmt.Println("创建成功后的地址指针:", ptr)
@@ -74,9 +71,9 @@ func initShm(sendHost string, threadNumber int) {
 		shmpoor[i].status = ipc_idle
 		// shmpoor[i].ptr = ptr[i]
 	}
-	if  threadNumber == 1 {
+	if threadNumber == 1 {
 		ipc_shmpool = shmpoor
-	}else if  threadNumber == 2 {
+	} else if threadNumber == 2 {
 		ipc_shmpool2 = shmpoor
 	}
 	// ipc_shmpool = shmpoor
@@ -93,21 +90,19 @@ func deleteShm() {
 	}
 }
 
-
 func getByteWithOffset(seghandle *shm.Segment, offset int) int {
 	bytes, err := seghandle.ReadChunk((int64)(offset+1), (int64)(offset))
 	CheckError(err)
 	return int(bytes[0])
 }
 
-
-func findUnUsingSeg(threadNumber int) int {
+func findUnUsingSeg(IPNumber string) int {
 	//var i int
 	var index int = -1
 	for ipc_busy {
 	}
 	ipc_busy = true
-	if threadNumber == 1 {
+	if IPNumber == "192.168.1.9" {
 		for i, item := range ipc_shmpool {
 			if item.status == ipc_idle {
 				index = i
@@ -116,7 +111,7 @@ func findUnUsingSeg(threadNumber int) int {
 		}
 		// 设置Seg为忙的状态i
 		ipc_shmpool[index].status = ipc_busying
-	}else if threadNumber == 2 {
+	} else if IPNumber == "192.168.1.10" {
 		for i, item := range ipc_shmpool2 {
 			if item.status == ipc_idle {
 				index = i
@@ -149,21 +144,18 @@ func findUnUsingSeg(threadNumber int) int {
 //	return index
 //}
 
-
-func setSegFree(index int, threadNumber int) {
-	if threadNumber == 1 {
+func setSegFree(index int, IPNumber string) {
+	if IPNumber == "192.168.1.9" {
 		ipc_shmpool[index].status = ipc_idle
-	}else if threadNumber == 2 {
+	} else if IPNumber == "192.168.1.10" {
 		ipc_shmpool2[index].status = ipc_idle
 	}
 }
-
 
 //func setSegFree(index int) {
 //	ipc_shmpool[index].status = ipc_idle
 //
 //}
-
 
 //func getSeg() int {
 //	var index int = -1

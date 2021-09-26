@@ -24,7 +24,7 @@ func taskServerInit(listenHost string, sendHost string, threadNumber int) {
 		for i := 0; i < numOfShm; i++ {
 			data = data + fmt.Sprintf("%d", ipc_shmpool[i].id) + "|:|:|"
 		}
-	}else if threadNumber == 2 {
+	} else if threadNumber == 2 {
 		for i := 0; i < numOfShm; i++ {
 			data = data + fmt.Sprintf("%d", ipc_shmpool2[i].id) + "|:|:|"
 		}
@@ -48,18 +48,17 @@ func taskServerInit(listenHost string, sendHost string, threadNumber int) {
 func taskEncode() {}
 func taskDecode() {}
 
-
 // 在shm中写入数据，之后读取计算结果
-func calculateTask(taskdata []byte, threadNumber int) (output []byte, err error) {
+func calculateTask(taskdata []byte, IPNumber string) (output []byte, err error) {
 	//数据处理
 	//arg := taskdata
 	//tasktype := taskdata[0]
 	// 提取任务并写入数据
-	taskparam := taskdata[0:]    // 提取数据
+	taskparam := taskdata[0:] // 提取数据
 	//taskparamLen := len(taskparam) //提取任务长度
-	shmIndex := findUnUsingSeg(threadNumber)
+	shmIndex := findUnUsingSeg(IPNumber)
 
-	if threadNumber == 1 {
+	if IPNumber == "192.168.1.9" {
 		shm := ipc_shmpool[shmIndex].segHandle
 		shm.Seek(0, 0)
 		writeData := append([]byte{ipc_writing}, taskparam...)
@@ -75,14 +74,14 @@ func calculateTask(taskdata []byte, threadNumber int) (output []byte, err error)
 		_, err = shm.Read(readData)
 		CheckError(err)
 		// 释放shm
-		setSegFree(shmIndex, threadNumber)
+		setSegFree(shmIndex, IPNumber)
 		// 处理计算结果
 		resultlen := readData[1:3]
 		resultlenInt := ByteToInt16(resultlen)
 		resultData := readData[3 : 3+resultlenInt]
 		output = resultData
 		return
-	}else if threadNumber == 2 {
+	} else if IPNumber == "192.168.1.10" {
 		shm := ipc_shmpool2[shmIndex].segHandle
 		shm.Seek(0, 0)
 		writeData := append([]byte{ipc_writing}, taskparam...)
@@ -98,7 +97,7 @@ func calculateTask(taskdata []byte, threadNumber int) (output []byte, err error)
 		_, err = shm.Read(readData)
 		CheckError(err)
 		// 释放shm
-		setSegFree(shmIndex, threadNumber)
+		setSegFree(shmIndex, IPNumber)
 		// 处理计算结果
 		resultlen := readData[1:3]
 		resultlenInt := ByteToInt16(resultlen)
@@ -107,7 +106,6 @@ func calculateTask(taskdata []byte, threadNumber int) (output []byte, err error)
 		return
 	}
 	return output, err
-
 
 	//shm := ipc_shmpool[shmIndex].segHandle
 	//shm.Seek(0, 0)

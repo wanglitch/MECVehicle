@@ -6,7 +6,7 @@ import (
 )
 
 //DownProcess ：下行接受处理函数
-func DownProcess(listenHost string, sendHost string) {
+func DownProcess(listenHost string) {
 	//listenHost := "0.0.0.0:" + gatewayDownPort
 	lister, err := net.ListenPacket(udp, listenHost)
 	if err != nil {
@@ -29,9 +29,11 @@ func DownProcess(listenHost string, sendHost string) {
 		//fmt.Println(n, remoteAddr, strings.Split(string(data), "|:|:|")[0])
 
 		//go print_aim(aim)
-		go udpDOWNProcess(data[:n], sendHost)
+		go udpDOWNProcess(data[:n], IPBytesToString(data[0:4])+":5212")
 	}
 }
+
+
 func udpDOWNProcess(data []byte, sendHost string) {
 	serverHash := data[4:24]
 	context := data[24:]
@@ -55,6 +57,8 @@ func udpDOWNProcess(data []byte, sendHost string) {
 	}
 
 }
+
+
 func udpSend(remoteAddr string, mess []byte) {
 	conn, err := net.Dial("udp", remoteAddr)
 	//defer conn.Close()

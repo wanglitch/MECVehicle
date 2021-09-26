@@ -11,12 +11,12 @@ import (
 	"time"
 )
 
-
 var zkservers string
 var conn *zk.Conn
+
 type zklistener func()
 
-func  Testlisten() {
+func Testlisten() {
 	fmt.Println("listen test")
 }
 
@@ -44,7 +44,7 @@ func SetZkServers(servers string, listeners ...zklistener) {
 		zkservers = servers
 		initConn()
 		for _, listener := range listeners {
-			listener()//定义当设置zk server时候需要通知的回调函数，做一些操作
+			listener() //定义当设置zk server时候需要通知的回调函数，做一些操作
 		}
 	}
 }
@@ -55,7 +55,7 @@ func initConn() {
 	//失之后，才会将注册的ip地址从zk上摘除，所以不能太长，否则影响服务
 	//正常功能，一般为1s.
 	//option := zk.WithEventCallback(Callback)
-	connZK, _, err := zk.Connect(servers, time.Second*5,)//测试所以写的60s
+	connZK, _, err := zk.Connect(servers, time.Second*5) //测试所以写的60s
 	if err != nil {
 		panic(err)
 	}
@@ -134,7 +134,6 @@ func Callback(event zk.Event) {
 	fmt.Println("<<<<<<<<<<<<<<<<<<<")
 }
 
-
 //删除注册的节点
 func Unregister(registerPath string) {
 	if conn != nil {
@@ -154,11 +153,10 @@ func GetConf(path string) (string, string, error) {
 	ret, _, err1 := conn.Get(path)
 	if err1 != nil {
 		fmt.Println("Get Err:", err1)
-		return "","", err1
+		return "", "", err1
 	}
 	return path, string(ret), nil
 }
-
 
 //获取zk结点下，注册的机器的ip信息
 func GetBatchConf(path string) (map[string]string, error) {
@@ -186,13 +184,11 @@ func GetAllConf(path string) (map[string]string, error) {
 		return ret, err1
 	}
 	for _, key := range keys {
-		_,conf,_ := GetConf("/"+key)
+		_, conf, _ := GetConf("/" + key)
 		ret[key] = conf
 	}
 	return ret, nil
 }
-
-
 
 func ZKOperateTest() {
 	fmt.Printf("ZKOperateTest\n")
@@ -206,8 +202,66 @@ func ZKOperateTest() {
 
 	for _, p := range children {
 
-		nodesname,conf,_ := GetConf("/"+p)
-		fmt.Println("conf: ", nodesname,":",conf)
+		nodesname, conf, _ := GetConf("/" + p)
+		fmt.Println("conf: ", nodesname, ":", conf)
 
 	}
+}
+
+func Createnodes() {
+	var path = "/work1"
+	var data = []byte("work1")
+	// permission
+	var acls = zk.WorldACL(zk.PermAll)
+	//_, _, _, err := conn.ExistsW(path)
+	//if err != nil {
+	//	fmt.Println(err)
+	//	return
+	//}
+	// create
+	p, err_create := conn.Create(path, data, 0, acls)
+	if err_create != nil {
+		fmt.Println(err_create)
+		return
+	}
+	fmt.Println("created:", p)
+}
+
+func Createmarknodes(path string, data []byte) {
+	//var path = "/1"
+	//var data = []byte("1")
+	// permission
+	var acls = zk.WorldACL(zk.PermAll)
+	_, _, _, err := conn.ExistsW(path)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	// create
+	p, err_create := conn.Create(path, data, zk.FlagEphemeral, acls)
+	if err_create != nil {
+		fmt.Println(err_create)
+		return
+	}
+	fmt.Println("created:", p)
+}
+
+func CreateChildnodes() {
+
+	// try create child node
+	var root_path = "/work1"
+	//_, _, _, err := conn.ChildrenW(root_path)
+	//if err != nil {
+	//	fmt.Println(err)
+	//	return
+	//}
+	cur_time := time.Now().Format //.Unix() //"child"
+	ch_path := fmt.Sprintf("%s/ch_%d", root_path, cur_time)
+	var acls = zk.WorldACL(zk.PermAll)
+	_, err := conn.Create(ch_path, []byte("1"), zk.FlagEphemeral, acls)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	//fmt.Printf("ch_path: %s create\n", p)
 }

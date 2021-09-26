@@ -24,8 +24,7 @@ func Gateway() {
 
 	IPlisten := make(map[string]int)
 	go TCPprocess(IPlisten, mecNodes) //shost:"192.168.1.7:8888"listen  shost2: "192.168.1.7:8889"send
-	go DownProcess("0.0.0.0:5211", "192.168.1.9:5212")
-	go DownProcess("0.0.0.0:5221", "192.168.1.10:5222")
+	go DownProcess("0.0.0.0:5211")
 
 	//开启定时器更新服务器信息
 	for true {

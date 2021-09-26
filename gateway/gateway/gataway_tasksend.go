@@ -82,29 +82,18 @@ func tcprecv(conn net.Conn) ([]byte, int) {
 	return returndata, length
 }
 
+
 func tcpsend(remoteAddr string, data []byte, len int) {
 	conn, err := net.Dial("tcp", remoteAddr)
 	if err != nil {
 		fmt.Println("tcp dial to", remoteAddr, "failed")
 	}
 	defer conn.Close()
-
-	//打开要传输的文件
-	// file, err := os.Open(filepath)``
-	// if err != nil {
-	// 	fmt.Println("os.Open err", err)
-	// 	return
-	// }
 	var i int = 0
 	buf := make([]byte, 1024)  //4096
 	segsum := len / 1024
-	//循环读取文件内容，写入远程连接
+	//循环读取data，写入远程连接
 	for i = 0; i < segsum; i++ {
-		// n, err := file.Read(buf)
-		// if err == io.EOF {
-		// 	fmt.Println("文件读取完毕")
-		// 	return
-		// }
 		copy(buf, data[i*1024:1024*(i+1)])
 		_, err = conn.Write(buf[:1024])
 		if err != nil {
@@ -126,8 +115,6 @@ func tcpsend(remoteAddr string, data []byte, len int) {
 //	if err != nil {
 //		fmt.Println("tcp dial to", remoteAddr, "failed")
 //	}
-//
-//
 //	var count int64
 //	for {
 //		buf := make([]byte, 1024)
@@ -139,10 +126,8 @@ func tcpsend(remoteAddr string, data []byte, len int) {
 //				break
 //			}
 //		}
-//
 //		count += int64(n)
 //	}
-//
 //	defer conn.Close()
 //	defer f.Close()
 //	return
@@ -156,7 +141,6 @@ func Tcpsendfromfile(remoteAddr string) {
 	}
 	//打开要传输的文件
 	f, err := os.Open("/home/wan/goWorkPlace/src/gateway1.7/1")
-
 	if err != nil {
 		fmt.Println("os.Open err", err)
 		return
@@ -172,10 +156,8 @@ func Tcpsendfromfile(remoteAddr string) {
 				break
 			}
 		}
-
 		count += int64(n)
 		}
-
 	defer conn.Close()
 	defer f.Close()
 	return

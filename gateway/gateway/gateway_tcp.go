@@ -1,11 +1,11 @@
 package gateway
 
 import (
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"net"
 	"strconv"
-	"strings"
 )
 
 func TCPprocess(IPlisten map[string]int, aim map[string]string) {
@@ -33,11 +33,12 @@ func TCPprocess(IPlisten map[string]int, aim map[string]string) {
 			fmt.Printf("Accept() suc conn=%v,客户端IP=%v\n", conn, conn.RemoteAddr().String())
 		}
 
-		IPReceive := conn.RemoteAddr().String()[:strings.Index(conn.RemoteAddr().String(), ":")]
+		//IPReceive := conn.RemoteAddr().String()[:strings.Index(conn.RemoteAddr().String(), ":")]
 		//fmt.Println(IPreceive)
-		//go print_aim(aim)
-		port := ensureIP(IPlisten, IPReceive)
-		shost2 := "192.168.1.7:" + port
+		//port := ensureIP(IPlisten, IPReceive)
+		//shost2 := "192.168.1.7:" + port
+
+		shost2 := "192.168.1.7:8889"
 		go process(conn, aim, shost2)
 
 	}
@@ -59,11 +60,10 @@ func process(con net.Conn, aim map[string]string, shost2 string) {
 
 	//buf, n := tcprecv(con)
 	buf, n := tcphandler(con)
-
+	fmt.Println("Gateway的tcp收到小车IP", IPBytesToString(buf[0:4]))
 	fmt.Println("Gateway的tcp收到了", n, "个字节")
 
 	ioutil.WriteFile(`temp`, buf[9:n], 0666)
-	//ioutil.WriteFile(`1`, buf[0:n], 0666)
 
 	if n != 0 {
 
@@ -90,11 +90,6 @@ func process(con net.Conn, aim map[string]string, shost2 string) {
 	}
 }
 
-func print_aim(m map[string]string) {
-	fmt.Println("当前的aim:", m)
-
-}
-
 //根据传入IP，分配端口用于TCP发送
 func ensureIP(IPlisten map[string]int, IPrec string) string {
 	shostNum := IPlisten[IPrec]
@@ -105,4 +100,18 @@ func ensureIP(IPlisten map[string]int, IPrec string) string {
 	}
 	shostPort := strconv.Itoa(shostNum)
 	return shostPort
+}
+
+//将BytesIP转为StringIP
+func IPBytesToString(b []byte) string {
+	var buf bytes.Buffer
+	for i, v := range b {
+		t := strconv.FormatInt(int64(v), 10)
+		if i < 3{
+			buf.WriteString(t + ".")
+		}else {
+			buf.WriteString(t)
+		}
+	}
+	return buf.String()
 }
