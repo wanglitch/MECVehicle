@@ -22,8 +22,7 @@ func Gateway() {
 	//status,aim :=upd(conn)
 	mecNodes, _ := GetAllConf("/")
 
-	IPlisten := make(map[string]int)
-	go TCPprocess(IPlisten, mecNodes) //shost:"192.168.1.7:8888"listen  shost2: "192.168.1.7:8889"send
+	go TCPprocess(mecNodes) //shost:"192.168.1.7:8888"listen  shost2: "192.168.1.7:8889"send
 	go DownProcess("0.0.0.0:5211")
 
 	//开启定时器更新服务器信息

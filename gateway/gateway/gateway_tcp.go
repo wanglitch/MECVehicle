@@ -8,7 +8,7 @@ import (
 	"strconv"
 )
 
-func TCPprocess(IPlisten map[string]int, aim map[string]string) {
+func TCPprocess(aim map[string]string) {
 	// fmt.Println("服务器开始监听...")
 	//1.tcp表示使用网络协议是tcp
 	//2.0.0.0.0:8888表示在本地监听8888端口
@@ -35,7 +35,6 @@ func TCPprocess(IPlisten map[string]int, aim map[string]string) {
 
 		//IPReceive := conn.RemoteAddr().String()[:strings.Index(conn.RemoteAddr().String(), ":")]
 		//fmt.Println(IPreceive)
-		//port := ensureIP(IPlisten, IPReceive)
 		//shost2 := "192.168.1.7:" + port
 
 		shost2 := "192.168.1.7:8889"
@@ -90,26 +89,14 @@ func process(con net.Conn, aim map[string]string, shost2 string) {
 	}
 }
 
-//根据传入IP，分配端口用于TCP发送
-func ensureIP(IPlisten map[string]int, IPrec string) string {
-	shostNum := IPlisten[IPrec]
-	if shostNum == 0 {
-		shostNum = len(IPlisten) + 1
-		IPlisten[IPrec] = 8879 + shostNum*10
-		shostNum = IPlisten[IPrec]
-	}
-	shostPort := strconv.Itoa(shostNum)
-	return shostPort
-}
-
 //将BytesIP转为StringIP
 func IPBytesToString(b []byte) string {
 	var buf bytes.Buffer
 	for i, v := range b {
 		t := strconv.FormatInt(int64(v), 10)
-		if i < 3{
+		if i < 3 {
 			buf.WriteString(t + ".")
-		}else {
+		} else {
 			buf.WriteString(t)
 		}
 	}
