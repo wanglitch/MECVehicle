@@ -13,8 +13,7 @@ func RegularRgister() {
 	//	return
 	//}
 
-	go taskServerInit("127.0.0.1:5215", "127.0.0.1:5214", 1)
-	go taskServerInit("127.0.0.1:5225", "127.0.0.1:5224", 2)
+	go taskServerInit("127.0.0.1:5215", "127.0.0.1:5214")
 	go TCPprocess("0.0.0.0:8889", "192.168.1.7:5211")
 
 	//Createnodes()

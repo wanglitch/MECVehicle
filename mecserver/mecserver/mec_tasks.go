@@ -10,8 +10,8 @@ type Tasks struct {
 	taskType int
 }
 
-func taskServerInit(listenHost string, sendHost string, threadNumber int) {
-	initShm(sendHost, threadNumber)
+func taskServerInit(listenHost string, sendHost string) {
+	initShm()
 
 	// 开启监听
 	//listenHost := "127.0.0.1:5215"
@@ -20,18 +20,9 @@ func taskServerInit(listenHost string, sendHost string, threadNumber int) {
 	defer lister.Close() //延时关闭listen
 	// 唤醒计算服务器
 	data := string(numOfShm) + "|:|:|"
-	if threadNumber == 1 {
-		for i := 0; i < numOfShm; i++ {
-			data = data + fmt.Sprintf("%d", ipc_shmpool[i].id) + "|:|:|"
-		}
-	} else if threadNumber == 2 {
-		for i := 0; i < numOfShm; i++ {
-			data = data + fmt.Sprintf("%d", ipc_shmpool2[i].id) + "|:|:|"
-		}
+	for i := 0; i < numOfShm; i++ {
+		data = data + fmt.Sprintf("%d", ipc_shmpool[i].id) + "|:|:|"
 	}
-	//for i := 0; i < numOfShm; i++ {
-	//	data = data + fmt.Sprintf("%d", ipc_shmpool[i].id) + "|:|:|"
-	//}
 	fmt.Println("UPLINK: ", []byte(data))
 	//udpSend("127.0.0.1:5214", []byte(data))
 	udpSend(sendHost, []byte(data))
@@ -45,6 +36,7 @@ func taskServerInit(listenHost string, sendHost string, threadNumber int) {
 	//监听服务器开启成功！！！！！
 
 }
+
 func taskEncode() {}
 func taskDecode() {}
 
@@ -56,77 +48,37 @@ func calculateTask(taskdata []byte, IPNumber string) (output []byte, err error) 
 	// 提取任务并写入数据
 	taskparam := taskdata[0:] // 提取数据
 	//taskparamLen := len(taskparam) //提取任务长度
-	shmIndex := findUnUsingSeg(IPNumber)
+	shmIndex := findUnUsingSeg()
 
+	shm := ipc_shmpool[shmIndex].segHandle
+	shm.Seek(0, 0)
+	writeData := append([]byte{ipc_writing}, taskparam...)
+	ipc_shmpool[shmIndex].segHandle.Write(writeData)
+	shm.Seek(0, 0)
 	if IPNumber == "192.168.1.9" {
-		shm := ipc_shmpool[shmIndex].segHandle
-		shm.Seek(0, 0)
-		writeData := append([]byte{ipc_writing}, taskparam...)
-		ipc_shmpool[shmIndex].segHandle.Write(writeData)
-		shm.Seek(0, 0)
 		ipc_shmpool[shmIndex].segHandle.Write([]byte{ipc_write_done})
 		for getByteWithOffset(ipc_shmpool[shmIndex].segHandle, 0) != ipc_cal_done {
 			// fmt.Println(ipc_shmpool[shmIndex].ptr)
 		}
-		// 提取任务计算结果
-		readData := make([]byte, 100)
-		shm.Seek(0, 0)
-		_, err = shm.Read(readData)
-		CheckError(err)
-		// 释放shm
-		setSegFree(shmIndex, IPNumber)
-		// 处理计算结果
-		resultlen := readData[1:3]
-		resultlenInt := ByteToInt16(resultlen)
-		resultData := readData[3 : 3+resultlenInt]
-		output = resultData
-		return
 	} else if IPNumber == "192.168.1.10" {
-		shm := ipc_shmpool2[shmIndex].segHandle
-		shm.Seek(0, 0)
-		writeData := append([]byte{ipc_writing}, taskparam...)
-		ipc_shmpool2[shmIndex].segHandle.Write(writeData)
-		shm.Seek(0, 0)
-		ipc_shmpool2[shmIndex].segHandle.Write([]byte{ipc_write_done2})
-		for getByteWithOffset(ipc_shmpool2[shmIndex].segHandle, 0) != ipc_cal_done2 {
+		ipc_shmpool[shmIndex].segHandle.Write([]byte{ipc_write_done2})
+		for getByteWithOffset(ipc_shmpool[shmIndex].segHandle, 0) != ipc_cal_done2 {
 			// fmt.Println(ipc_shmpool[shmIndex].ptr)
 		}
-		// 提取任务计算结果
-		readData := make([]byte, 100)
-		shm.Seek(0, 0)
-		_, err = shm.Read(readData)
-		CheckError(err)
-		// 释放shm
-		setSegFree(shmIndex, IPNumber)
-		// 处理计算结果
-		resultlen := readData[1:3]
-		resultlenInt := ByteToInt16(resultlen)
-		resultData := readData[3 : 3+resultlenInt]
-		output = resultData
-		return
 	}
-	return output, err
+	// 提取任务计算结果
+	readData := make([]byte, 100)
+	shm.Seek(0, 0)
+	_, err = shm.Read(readData)
+	CheckError(err)
+	// 释放shm
+	setSegFree(shmIndex)
+	// 处理计算结果
+	resultlen := readData[1:3]
+	resultlenInt := ByteToInt16(resultlen)
+	resultData := readData[3 : 3+resultlenInt]
+	output = resultData
 
-	//shm := ipc_shmpool[shmIndex].segHandle
-	//shm.Seek(0, 0)
-	//writeData := append([]byte{ipc_writing}, taskparam...)
-	//ipc_shmpool[shmIndex].segHandle.Write(writeData)
-	//shm.Seek(0, 0)
-	//ipc_shmpool[shmIndex].segHandle.Write([]byte{ipc_write_done})
-	//for getByteWithOffset(ipc_shmpool[shmIndex].segHandle, 0) != ipc_cal_done {
-	//	// fmt.Println(ipc_shmpool[shmIndex].ptr)
-	//}
-	//// 提取任务计算结果
-	//readData := make([]byte, 100)
-	//shm.Seek(0, 0)
-	//_, err = shm.Read(readData)
-	//CheckError(err)
-	//// 释放shm
-	//setSegFree(shmIndex)
-	//// 处理计算结果
-	//resultlen := readData[1:3]
-	//resultlenInt := ByteToInt16(resultlen)
-	//resultData := readData[3 : 3+resultlenInt]
 	//// fmt.Println("接受到的数据的长度为：", len(taskparam)
 	//// taskParamStr := string(taskparam)
 	////fmt.Println(taskdata)
@@ -146,5 +98,5 @@ func calculateTask(taskdata []byte, IPNumber string) (output []byte, err error) 
 	//// err = nil
 	////fmt.Println(string(output))
 	//output = resultData
-	//return
+	return
 }
