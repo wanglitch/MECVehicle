@@ -63,8 +63,7 @@ func Process(con net.Conn, sendHost string) {
 
 	ioutil.WriteFile(`temp`, buf[9:n], 0666)
 
-	taskdata := context
-	calResult, err := calculateTask(taskdata, IPBytesToString(sourceIP))
+	calResult, err := calculateTask(context, IPBytesToString(sourceIP))
 	//calResult, err := calculateTask(buf)
 
 	callength := len(calResult)
@@ -76,11 +75,11 @@ func Process(con net.Conn, sendHost string) {
 		//data = []byte(fmt.Sprintf("%x", calSHA1SUM([]byte(calResult))) + delimiter + seqNo + delimiter + "leng" + delimiter + string(calResult) + delimiter + sourceIP + "|:|:|")
 		//fmt.Println(string(data))
 		//data := append(sourceIP, calSHA1SUM(calResult)...)
-		// data := calSHA1SUM(append(sourceIP, calResult...))
+		//data := calSHA1SUM(append(sourceIP, calResult...))
 		//data = append(data, calResult...)
-		// fmt.Println("the cal result is:", (calResult))
-		// fmt.Println("the sourceIP is:", sourceIP)
-		// fmt.Println("the calSUM:", calSHA1SUM(calResult))
+		//fmt.Println("the cal result is:", (calResult))
+		//fmt.Println("the sourceIP is:", sourceIP)
+		//fmt.Println("the calSUM:", calSHA1SUM(calResult))
 
 		copy(data[0:4], sourceIP)
 		copy(data[4:24], calSHA1SUM(calResult))

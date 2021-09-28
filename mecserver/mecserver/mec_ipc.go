@@ -70,11 +70,6 @@ func initShm() {
 		shmpoor[i].status = ipc_idle
 		// shmpoor[i].ptr = ptr[i]
 	}
-	//if threadNumber == 1 {
-	//	ipc_shmpool = shmpoor
-	//} else if threadNumber == 2 {
-	//	ipc_shmpool2 = shmpoor
-	//}
 	ipc_shmpool = shmpoor
 	// fmt.Println(ipc_shmpool)
 	// ipc_shmpool[0].segHandle.Write([]byte{52, 52, 12, 14})
