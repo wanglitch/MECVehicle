@@ -59,7 +59,7 @@ func process(con net.Conn, aim map[string]string, shost2 string) {
 
 	//buf, n := tcprecv(con)
 	buf, n := tcphandler(con)
-	fmt.Println("Gateway的tcp收到小车IP", IPBytesToString(buf[0:4]))
+	//fmt.Println("Gateway的tcp收到小车IP", IPBytesToString(buf[0:4]))
 	fmt.Println("Gateway的tcp收到了", n, "个字节")
 
 	ioutil.WriteFile(`temp`, buf[9:n], 0666)

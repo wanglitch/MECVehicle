@@ -41,7 +41,7 @@ func taskEncode() {}
 func taskDecode() {}
 
 // 在shm中写入数据，之后读取计算结果
-func calculateTask(taskdata []byte, IPNumber string) (output []byte, err error) {
+func calculateTask(taskdata []byte, IPNumber []byte) (output []byte, err error) {
 	//数据处理
 	//arg := taskdata
 	//tasktype := taskdata[0]
@@ -49,22 +49,15 @@ func calculateTask(taskdata []byte, IPNumber string) (output []byte, err error) 
 	taskparam := taskdata[0:] // 提取数据
 	//taskparamLen := len(taskparam) //提取任务长度
 	shmIndex := findUnUsingSeg()
-
 	shm := ipc_shmpool[shmIndex].segHandle
 	shm.Seek(0, 0)
 	writeData := append([]byte{ipc_writing}, taskparam...)
 	ipc_shmpool[shmIndex].segHandle.Write(writeData)
 	shm.Seek(0, 0)
-	if IPNumber == "192.168.1.9" {
-		ipc_shmpool[shmIndex].segHandle.Write([]byte{ipc_write_done})
-		for getByteWithOffset(ipc_shmpool[shmIndex].segHandle, 0) != ipc_cal_done {
-			// fmt.Println(ipc_shmpool[shmIndex].ptr)
-		}
-	} else if IPNumber == "192.168.1.10" {
-		ipc_shmpool[shmIndex].segHandle.Write([]byte{ipc_write_done2})
-		for getByteWithOffset(ipc_shmpool[shmIndex].segHandle, 0) != ipc_cal_done2 {
-			// fmt.Println(ipc_shmpool[shmIndex].ptr)
-		}
+	writeDone, calDone := fromIPtoMessage(IPNumber)
+	ipc_shmpool[shmIndex].segHandle.Write([]byte{writeDone})
+	for getByteWithOffset(ipc_shmpool[shmIndex].segHandle, 0) != calDone {
+		// fmt.Println(ipc_shmpool[shmIndex].ptr)
 	}
 	// 提取任务计算结果
 	readData := make([]byte, 100)
@@ -98,5 +91,15 @@ func calculateTask(taskdata []byte, IPNumber string) (output []byte, err error) 
 	//// err = nil
 	////fmt.Println(string(output))
 	//output = resultData
+	return
+}
+
+//根据IP决定发送和接收报文
+func fromIPtoMessage(IPNumber []byte) (writeDone byte, calDone int) {
+	for i, v := range IPNumber {
+		if i == 3{
+			return v, int(v-10)
+		}
+	}
 	return
 }

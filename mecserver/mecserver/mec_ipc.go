@@ -18,14 +18,10 @@ var (
 	ipc_idle        int  = 1
 	ipc_busying     int  = 2
 	ipc_writing     byte = 0
-	ipc_write_done  byte = 1
-	ipc_write_done2 byte = 2
-	ipc_cal_done    int  = 3
-	ipc_cal_done2   int  = 4
 
 	ipc_shmpool []ipc
 
-	numOfShm int = 6
+	numOfShm int = 3
 	capOfShm int = 1024000
 )
 

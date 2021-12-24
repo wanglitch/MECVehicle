@@ -54,16 +54,16 @@ func Process(con net.Conn, sendHost string) {
 	buf, n := tcpHandler(con)
 	fmt.Println("MEC的tcp收到了", n, "个字节")
 
-	//context := buf[0:n]
 	//3.服务器显示客户端信息
 	//fmt.Printf("收到了客户端（IP：%v）%d 个字节数据",con.RemoteAddr().String(),n)
 	//fmt.Printf("收到了客户端 %s 数据:%s ", con.RemoteAddr().String(), string(buf[:n]))
 	sourceIP = buf[0:4]
 	context := buf[4:n]
-
+	//fmt.Println("[]byteIP is :", sourceIP)
+	//fmt.Println("IP is :", IPBytesToString(sourceIP))
 	ioutil.WriteFile(`temp`, buf[9:n], 0666)
-
-	calResult, err := calculateTask(context, IPBytesToString(sourceIP))
+	//calResult, err := calculateTask(context, IPBytesToString(sourceIP))
+	calResult, err := calculateTask(context, sourceIP)
 	//calResult, err := calculateTask(buf)
 
 	callength := len(calResult)
@@ -111,7 +111,7 @@ func tcpHandler(con net.Conn) ([]byte, int) {
 	return allbuf, m
 }
 
-//将BytesIP转为StringIP
+//将[]bytesIP转为StringIP
 func IPBytesToString(b []byte) string {
 	var buf bytes.Buffer
 	for i, v := range b {
